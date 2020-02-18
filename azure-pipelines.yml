@@ -9,10 +9,8 @@ pr:
 jobs:
 # We projuce on mac and share the assets so we don't have to run projucer on linux
 - job: Projuce
-  strategy:
-    matrix:
-      mac:
-        imageName: 'macos-10.14'
+  pool:
+    vmImage: 'macos-10.14'
 
   steps:
   - checkout: self
