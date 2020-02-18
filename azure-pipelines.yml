@@ -28,7 +28,7 @@ jobs:
       ./scripts/projuce-mac.sh
 
       mkdir pipeline
-      tar cf pipeline/juced.tgz Builds/ JuceLibraryCode/
+      tar czf pipeline/juced.tgz Builds/ JuceLibraryCode/
     displayName: Make Projuce Output
     
   - task: PublishPipelineArtifact@0
@@ -67,6 +67,7 @@ jobs:
       targetPath: $(Build.ArtifactStagingDirectory)
 
   - bash: |
+      ls -l $(Build.ArtifactStagingDirectory)
       git submodule update --init --recursive
       tar xvzf $(Build.ArtifactStagingDirectory)/juced.tgz
     displayName: Setup for Building
