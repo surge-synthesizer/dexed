@@ -19,16 +19,20 @@ jobs:
     fetchDepth: 1
 
   - bash: |
-     set -e
-     set -o xtrace
-     git submodule update --init --recursive
+      set -e
+      set -o xtrace
+      echo "Uname -s output"
+      uname -s
+     
+      git submodule update --init --recursive
 
-     ./scripts/get-juce.sh
-     ./scripts/projuce-mac.sh
+      ./scripts/get-juce.sh osx
+      ./scripts/projuce-mac.sh
 
-     mkdir pipeline
-     tar cf pipeline/juced.tgz Builds/ JuceLibraryCode/
-
+      mkdir pipeline
+      tar cf pipeline/juced.tgz Builds/ JuceLibraryCode/
+    displayName: Make Projuce Output
+    
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'JUCE_OUTPUTS'

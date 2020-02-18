@@ -1,16 +1,7 @@
 #!/bin/bash
 
 JUCE_VERSION=5.4.7
-OS=`uname -s`
-JOS=windows
-
-if [[ $OS == "Darwin" ]]; then
-  JOS=osx
-fi
-
-if [[ $OS == "Linux" ]]; then
-  JOS=linux
-fi
+JOS=$1
 
 echo Downloading for $JOS
 
