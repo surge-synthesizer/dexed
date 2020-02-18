@@ -7,7 +7,34 @@ pr:
 - master
 
 jobs:
+# We projuce on mac and share the assets so we don't have to run projucer on linux
+- job: Projuce
+  imageName: 'macos-10.14'
+  steps:
+  - checkout: self
+    fetchDepth: 1
+
+  - bash: |
+     set -e
+     set -o xtrace
+     git submodule update --init --recursive
+
+     ./scripts/get-juce.sh
+     ./scritps/projuce-mac.sh
+
+     mkdir pipeline
+     tar cf pipeline/juced.tgz Builds/ JuceLibraryCode/
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'JUCE_OUTPUTS'
+      targetPath: 'pipeline/'
+    displayName: Publish JUCE Artifacts 
+  
+
 - job: Build
+  dependsOn: Projuce
+  condition: succeeded()
   strategy:
     matrix:
       mac:
@@ -28,15 +55,17 @@ jobs:
     fetchDepth: 1
     # submodules: recursive # can't do submodules here b'cuz depth=1 fails with Github
 
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      artifactName: 'JUCE_OUTPUTS'
+      targetPath: $(Build.ArtifactStagingDirectory)
 
   - bash: |
       git submodule update --init --recursive
-      ./scripts/get-juce.sh
-      ./scripts/set-version.sh
+      tar xvzf $(Build.ArtifactStagingDirectory)/juced.tgz
     displayName: Setup for Building
 
   - bash: |
-      ./scripts/projuce-mac.sh
       ./scripts/build-mac.sh
       ./scripts/package-mac.sh
     displayName: Build Mac Plugins
@@ -50,11 +79,6 @@ jobs:
     displayName: Publish Mac DMG
     condition: variables.isMac
 
-  - bash: |
-      assets/JUCE/Projucer.exe --resave Dexed.jucer   
-    displayName: Build Windows sln file
-    condition: variables.isWindows
-    
   - task: MSBuild@1
     inputs:
       solution: 'Builds\VisualStudio2017\Dexed.sln'
@@ -90,7 +114,6 @@ jobs:
       sudo apt-get install -y libfreetype6-dev
       sudo apt-get install -y libgl1-mesa-dev
 
-      ./scripts/projuce-lin.sh
       ./scripts/build-lin.sh
     displayName: Build Linux Plugins
     condition: variables.isLinux
