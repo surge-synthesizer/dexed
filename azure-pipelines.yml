@@ -61,16 +61,22 @@ jobs:
     fetchDepth: 1
     # submodules: recursive # can't do submodules here b'cuz depth=1 fails with Github
 
+  - bash: |
+      mkdir pipeline
+    displayName: Setup Pipeline Dir
+
   - task: DownloadPipelineArtifact@0
     inputs:
       artifactName: 'JUCE_OUTPUTS'
-      targetPath: $(Build.ArtifactStagingDirectory)
+      targetPath: 'pipeline/'
 
   - bash: |
       ./scripts/get-juce.sh
-      ls -l $(Build.ArtifactStagingDirectory)
+      ls -l pipeline
+      tar xvzf pipeline/juced.tgz
+      
       git submodule update --init --recursive
-      tar xvzf $(Build.ArtifactStagingDirectory)/juced.tgz
+
     displayName: Setup for Building
 
   - bash: |
@@ -123,7 +129,15 @@ jobs:
       sudo apt-get install -y libgl1-mesa-dev
 
       ./scripts/build-lin.sh
+      ./scripts/package-lin.sh
     displayName: Build Linux Plugins
+    condition: variables.isLinux
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'LINUX_BUILD'
+      targetPath: 'products/'
+    displayName: Publish Linux Tar
     condition: variables.isLinux
 
 
@@ -140,6 +154,11 @@ jobs:
   - task: DownloadPipelineArtifact@0
     inputs:
       artifactName: 'WINDOWS_BUILD'
+      targetPath: $(Build.ArtifactStagingDirectory)
+
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      artifactName: 'LINUX_BUILD'
       targetPath: $(Build.ArtifactStagingDirectory)
 
   - bash: |
