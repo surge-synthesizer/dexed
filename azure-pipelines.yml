@@ -67,6 +67,7 @@ jobs:
       targetPath: $(Build.ArtifactStagingDirectory)
 
   - bash: |
+      ./scripts/get-juce.sh
       ls -l $(Build.ArtifactStagingDirectory)
       git submodule update --init --recursive
       tar xvzf $(Build.ArtifactStagingDirectory)/juced.tgz
