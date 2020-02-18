@@ -24,10 +24,11 @@ jobs:
      git submodule update --init --recursive
 
      ./scripts/get-juce.sh
-     ./scritps/projuce-mac.sh
+     ./scripts/projuce-mac.sh
 
      mkdir pipeline
      tar cf pipeline/juced.tgz Builds/ JuceLibraryCode/
+   displayName: Make JUCE Artifacts
 
   - task: PublishPipelineArtifact@0
     inputs:
